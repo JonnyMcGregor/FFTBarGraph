@@ -7,3 +7,5 @@ frequency. A sin wave is then generated at that fundamental frequency and
 output through the connected audio device.
 
 ![FFTGraph](FFTBarGraph.png)
+
+Contact: Jonny McGregor - jonny.mcgregor1@gmail.com
