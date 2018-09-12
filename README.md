@@ -6,4 +6,4 @@ for the estimated fundamental frequency of the input i.e. the most dominant
 frequency. A sin wave is then generated at that fundamental frequency and
 output through the connected audio device.
 
-![FFTGraph](Screenshot(21).png)
+![FFTGraph](Screenshot (21).png)
