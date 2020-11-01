@@ -30,9 +30,7 @@ MainComponent::~MainComponent()
 //==============================================================================
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-	//Ok cool, so this function is identifying the sample rate of the audio channels
-	//and setting all of the variables for signal processing which rely on this value.
-	//Then we print the info to console to make sure errythings going swell
+	//set up variables for DSP
 	updateAngleDelta();
 	currentSampleRate = sampleRate;
 	freqRes = sampleRate / fftSize;
@@ -46,8 +44,7 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
 
 void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill)
 {
-	//All of this stuff below sets up the loop to record and play audio. 
-
+	//set up the loop to record and play audio. 
 	AudioIODevice* device = deviceManager.getCurrentAudioDevice();
 	const BigInteger activeInputChannels = device->getActiveInputChannels();
 	const BigInteger activeOutputChannels = device->getActiveOutputChannels();
@@ -74,9 +71,7 @@ void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFil
 				auto* inBuffer = bufferToFill.buffer->getReadPointer(actualInputChannel, bufferToFill.startSample);
 				auto* outBuffer = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
 				
-				//This for loop is where the important input/output stuff happens,
-				//it works by assigning audio data between -1 and +1 to each individual sample
-				//it will also send data to the fft to be processed
+				//send data to the fft to be processed, playback sine wave at fundamental frequency
 				for (int sample = 0; sample < bufferToFill.numSamples; ++sample) {
 					pushNextSampleIntoFifo(inBuffer[sample]);//push sample to fft array				
 					const float currentSample = (float)std::sin(currentAngle);//setting up a sine wave
@@ -95,29 +90,20 @@ void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFil
 
 void MainComponent::releaseResources()
 {
-    // This will be called when the audio device stops, or when it is being
-    // restarted due to a setting change.
-
-    // For more details, see the help for AudioProcessor::releaseResources()
-	
 }
 
 //==============================================================================
 void MainComponent::paint (Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
+    // Our component is opaque, so we must completely fill the background with a solid colour
 	g.fillAll(Colours::black);
 	g.setOpacity(1.0f);
 	g.drawImage(spectrogramImage, getBounds().toFloat());
-	
-    // You can add your drawing code here!
 }
 
 void MainComponent::resized()
 {
-    // This is called when the MainContentComponent is resized.
-    // If you add any child components, this is where you should
-    // update their positions.
+
 }
 
 void MainComponent::timerCallback()
@@ -140,9 +126,6 @@ void MainComponent::timerCallback()
 
 void MainComponent::pushNextSampleIntoFifo(float sample) noexcept
 {
-	//Ok, so here we are filling fifo with sample data. When fifo gets full, that data
-	//gets copied to the first half of fftData. fifo then gets rewritten by next set of data.
-	//Also to make the loop work fftData needs to be cleared 
 	if (fifoIndex == fftSize)
 	{
 		if (!nextFFTBlockReady)
@@ -158,8 +141,6 @@ void MainComponent::pushNextSampleIntoFifo(float sample) noexcept
 
 void MainComponent::drawNextLineOfSpectrogram()
 {
-	//These floats are used to define the parameters of drawing shit
-
 	float imageWidth = spectrogramImage.getWidth();//width of window
 	float imageHeight = spectrogramImage.getHeight() - 50.0f;//height of window
 	float binWidth = imageWidth / (fftSize*0.25f);
@@ -173,9 +154,6 @@ void MainComponent::drawNextLineOfSpectrogram()
 		auto level = jmap(fftData[fftDataIndex], 0.0f, jmax(maxLevel.getEnd(),1e-5f), imageHeight, 0.0f);
 		drawItBoi.setColour(Colours::aliceblue);
 		drawItBoi.drawLine(fftDataIndex*binWidth, imageHeight, fftDataIndex*binWidth, level, binWidth);
-		String message;
-		message << fftData[y];
-		//Logger::getCurrentLogger()->writeToLog(message);
 	}
 }
 
